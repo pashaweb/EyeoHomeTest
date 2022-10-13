@@ -1,0 +1,174 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eyeo GmbH - Circumvention Test Case</title>
+    <script defer src="solution.js">
+      /*
+       * INSTRUCTIONS:
+       * 
+       * Some useful information about our work so you can better understand
+       * why we gave you this challenge:
+       *
+       * We are the Anti-Circumvention team. The word "Circumvention" in our team name refers
+       * to the techniques used by some websites to counter our adblocking efforts.
+       * The word "Anti" refers to our efforts to counter thier countering efforts :)
+       * It's like a chess game, but the board is the browser and
+       * our chess pieces are JS functions.
+       *
+       * As part of how life is in this team from time to time:
+       *   Imagine customer's are complaining about the ads - a very lot! You need to
+       *   roll out a first fix ideally in two hours, not more than three! Don't
+       *   invest more time but rather wrap it up and reason your priorities
+       *
+       * Please write in `solution.js` some code able to remove annoying Ads.
+       * Please also reason your code to understand both logic and/or possible caveats.
+       *
+       * Ads will be shown either as image or content. In any case Ad elements should
+       * be identifiable as such:
+       *   * Ad text contain the word "Advertisement", but the whole text is to be
+       *     removed
+       *   * Ad Images show a big red "Advertisement" overlay. Again, the image under
+       *     that overlay has to be removed too
+       *   * Images containing a "Not an Ad" are indeed not an ad, hence these should
+       *     not be removed
+       *
+       * The challenge is to find a way to prevent such page to show Ads,
+       * or to remove these as soon as shown to the user.
+       * Please try to avoid all flickering effects
+       * It is not possible to change anything in this HTML file, only solution.js
+       * can prevent Ads from being shown.
+       *
+       * The target browser for this task is latest stable Chrome/ium.
+       * 
+       * Again: We expect this to take 2-3 hours, see above. This should definitely
+       * not take more than 5 hours. Please tell us how much time did you spent on this.
+       * 
+       * We encourage you to describe your thought process (feel free to describe any
+       * thought that crossed your mind). You can do that by providing a README file.
+       */
+    </script>
+    <script>
+    (() =>
+    {
+      /*!
+       * Circumvention Test Case
+       * (C) Eyeo GmbH - 2019
+       */
+
+      let shuffle = () => Math.random() < 0.5 ? 1 : -1;
+      let obfuscated = (str) =>
+      {
+        let out = [];
+        for (let i = 0; i < str.length;)
+        {
+          let next = Math.ceil(Math.random() * str.length / 3);
+          let chunk = str.substr(i, next);
+          out.push(chunk, chunk);
+          i += next;
+        }
+        return `<span>${out.join('</span><span>')}</span>`;
+      };
+      let generateOverlay = ( fake ) =>
+      {
+        let canvas = document.createElement('canvas');
+        let ctx = canvas.getContext( '2d' );
+        
+        canvas.width = ( 260 + Math.ceil( Math.random() * 40 ) );
+        canvas.height = 200;
+
+        ctx.font = '25px sans-serif';
+        ctx.fillStyle = fake ? 'rgba( 255, 0, 0, 0 )' : '#f00';
+        
+        ctx.fillText( 'Advertisement', 5, 25 );
+
+        return canvas.toDataURL();
+      };
+
+      let imgContent = ( overlay ) =>
+      {
+        switch ( overlay )
+        {
+          case 'ad':
+            return [
+              `<img src="${generateOverlay( false )}" class="overlay">`,
+              `<img src="https://picsum.photos/300/200?ts=000000&grayscale">`,
+            ];
+          case 'fake':
+            return [
+              `<img src="${generateOverlay( true )}" class="overlay">`,
+              `<img src="https://picsum.photos/300/200?ts=000001&grayscale">`,
+            ];
+          case 'content':
+            return [
+              `<img src="https://picsum.photos/300/200?ts=000002&grayscale" class="overlay">`
+            ];
+          default:
+            return [
+              `<img src="data:image/png;base64,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" class="overlay">`
+            ];
+        }
+      }
+
+      let divs = [
+        `<div>
+          ${imgContent('ad').sort(shuffle).join('')}
+        </div>`,
+        `<div>
+          ${imgContent('fake').sort(shuffle).join('')}
+        </div>`,
+        `<div>
+          ${imgContent('content').sort(shuffle).join('')}
+        </div>`,
+        `<div>
+          ${imgContent('additional').sort(shuffle).join('')}
+        </div>`,
+        `<div>
+          ${obfuscated('Advertisement BlahBlah')}
+        </div>`,
+        `<div>
+          ${obfuscated('BlahBlah (Advertisement)')}
+        </div>`,
+        `<div>
+          ${obfuscated('Content Text Lorem Ipsum')}
+        </div>`,
+        `<div>
+          ${obfuscated('Content Text Lorem Ipsum')}
+        </div>`
+      ];
+
+      document.write(`
+        <style>
+          .overlay{position:relative}
+          img:first-of-type:not(:only-of-type){position:absolute}
+          span:nth-child(2n+${(shuffle() + 1) / 2}){
+            ${[
+              'display:none',
+              'display:inline-block;width:0;overflow:hidden',
+              'position:absolute;left:-9999px'
+            ][Math.floor(Math.random() * 3)]}
+          }
+        </style>
+        <body>${divs.sort(shuffle).join('')}</body>
+      `);
+
+      window.addEventListener('load', () =>
+      {
+        let add = () =>
+        {
+          let template = document.createElement('template');
+          template.innerHTML = divs.sort(shuffle).join('').replace(
+            /\?ts=.{5}/g, '?ts=' + Math.ceil( Math.random() * 99999 )
+          );
+          document.body.appendChild(template.content);
+        };
+
+        window.setTimeout( add, Math.ceil( Math.random() * 500 ) );
+        window.setTimeout( add, Math.ceil( Math.random() * 500 + 1000 ) );
+      });
+    })();
+    </script>
+  </head>
+</html>
